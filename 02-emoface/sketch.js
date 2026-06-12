@@ -14,6 +14,11 @@ let fx = 0;
 let fy = 0;
 let fScale = 1;
 
+// video cover-fit transform (computed every frame)
+let vScale = 1;
+let vOffX = 0;
+let vOffY = 0;
+
 // pinch tap state
 let pinching = false;
 let pinchStartFrame = 0;
@@ -86,6 +91,7 @@ function randomizeAll() {
 
 function draw() {
   background('#f3efe7');
+  drawVideoBackground();
 
   // face target: idle = centered
   let tx = width / 2;
@@ -94,11 +100,9 @@ function draw() {
 
   const face = faces[0];
   if (face && face.box) {
-    const sx = width / video.width;
-    const sy = height / video.height;
-    tx = (face.box.xMin + face.box.width / 2) * sx;
-    ty = (face.box.yMin + face.box.height / 2) * sy;
-    ts = constrain((face.box.height * sy) / 300, baseScale() * 0.4, baseScale() * 2.5);
+    tx = vOffX + (face.box.xMin + face.box.width / 2) * vScale;
+    ty = vOffY + (face.box.yMin + face.box.height / 2) * vScale;
+    ts = constrain((face.box.height * vScale) / 300, baseScale() * 0.4, baseScale() * 2.5);
   }
 
   fx = lerp(fx, tx, 0.12);
@@ -114,6 +118,14 @@ function draw() {
   drawHUD();
 }
 
+// Cover-fit: fill the canvas, crop the overflow — no stretching.
+function drawVideoBackground() {
+  vScale = max(width / video.width, height / video.height);
+  vOffX = (width - video.width * vScale) / 2;
+  vOffY = (height - video.height * vScale) / 2;
+  image(video, vOffX, vOffY, video.width * vScale, video.height * vScale);
+}
+
 // ---------------------------------------------------------------- shapes
 
 function drawShape(idx, x, y, S, col) {
@@ -123,15 +135,16 @@ function drawShape(idx, x, y, S, col) {
   fill(col);
 
   if (idx === 0) {
-    // blob: wobbly circle
+    // blob: wobbly circle (extra wrap points close the curve; no CLOSE,
+    // which would add a duplicate straight edge -> fold artifact)
     beginShape();
     const n = current.blob.length;
     for (let i = 0; i < n + 3; i++) {
-      const a = (TWO_PI * i) / n;
+      const a = (TWO_PI * (i % n)) / n;
       const r = (S / 2) * current.blob[i % n];
       curveVertex(cos(a) * r, sin(a) * r);
     }
-    endShape(CLOSE);
+    endShape();
   } else if (idx === 1) {
     // clover: lobes around a center
     const lobes = 4;
@@ -141,15 +154,17 @@ function drawShape(idx, x, y, S, col) {
     }
     circle(0, 0, S * 0.55);
   } else if (idx === 2) {
-    // soft star / flower
+    // soft star / flower (same wrap technique as the blob)
     beginShape();
     const points = 8;
-    for (let i = 0; i < points * 2 + 3; i++) {
-      const a = (PI * i) / points;
-      const r = (S / 2) * (i % 2 === 0 ? 1 : 0.62);
+    const n = points * 2;
+    for (let i = 0; i < n + 3; i++) {
+      const j = i % n;
+      const a = (PI * j) / points;
+      const r = (S / 2) * (j % 2 === 0 ? 1 : 0.62);
       curveVertex(cos(a) * r, sin(a) * r);
     }
-    endShape(CLOSE);
+    endShape();
   } else if (idx === 3) {
     // squircle
     rectMode(CENTER);
@@ -290,8 +305,8 @@ function handleHand() {
   }
 
   const kp = hand.keypoints.map((k) => ({
-    x: (k.x / video.width) * width,
-    y: (k.y / video.height) * height,
+    x: vOffX + k.x * vScale,
+    y: vOffY + k.y * vScale,
   }));
   const wrist = kp[0];
   const middleMcp = kp[9];
