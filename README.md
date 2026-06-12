@@ -10,6 +10,7 @@ The root is a landing page with a face-tracking hero (ml5 faceMesh / MediaPipe):
 |---|--------|-------------|
 | 01 | [01-magnetic-field](./01-magnetic-field) | Interactive magnetic / vector field controlled by hand tracking |
 | 02 | [02-emoface](./02-emoface) | Random blob character (shape + eyes + mouth) that mirrors your head; pinch to reroll |
+| 03 | [03-kamehameha](./03-kamehameha) | Charge a glowing energy ball between both palms, open hands to fire a Dragon Ball beam — 2 players (blue vs red) |
 
 ## Running locally
 
