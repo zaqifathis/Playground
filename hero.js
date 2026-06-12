@@ -26,6 +26,7 @@ const MOUTH_OPEN_GAP = 0.035; // lip gap / face height where "open" starts
 const MOUTH_WIDE_GAP = 0.12;  // lip gap / face height for fully open
 const EMIT_TRIGGER = 0.3;     // mouth amount that starts emitting letters
 const EMIT_INTERVAL = 11;     // frames between letters
+const SHOW_MESH_POINTS = false; // raw faceMesh landmark dots (debug)
 
 function preload() {
   faceMesh = ml5.faceMesh({ maxFaces: 1, refineLandmarks: false, flipped: true });
@@ -91,6 +92,7 @@ function draw() {
   const mouth = mouthPos(fx, fy, fScale);
   emitLetters(mouth);
   updateAndDrawLetters(mouth);
+  if (SHOW_MESH_POINTS) drawMeshPoints(face);
   drawFace(fx, fy, fScale, fMouth);
 }
 
@@ -135,7 +137,21 @@ function drawFace(x, y, s, mouthAmt) {
   const mouthD = lerp(20 * s, 90 * s, mouthAmt);
   strokeWeight(max(w * 0.65, lerp(w * 0.65, w, mouthAmt)));
   circle(m.x, m.y, mouthD);
+
   pop();
+}
+
+// All raw faceMesh landmark points (~468), thin and small — just to show
+// the tracking grid behind the icon.
+function drawMeshPoints(face) {
+  if (!face || !face.keypoints) return;
+  const sx = width / video.width;
+  const sy = height / video.height;
+  noStroke();
+  fill(0, 90);
+  for (const k of face.keypoints) {
+    circle(k.x * sx, k.y * sy, 2.5);
+  }
 }
 
 // ---------------------------------------------------------------- letters
