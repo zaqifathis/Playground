@@ -2,8 +2,9 @@
 // Tracking: ml5 faceMesh (MediaPipe under the hood), webcam stays hidden.
 //
 // - The face icon follows your head position and scale.
-// - Open your mouth: the 'O' mouth grows and a "PLAYGROUND" speech
-//   bubble pops in; close it and the bubble fades out smoothly.
+// - Open your mouth: the 'O' mouth grows and the letters of
+//   "playground" float out of it one by one, growing as they rise,
+//   then dissolve when they get too far.
 
 let faceMesh;
 let video;
@@ -15,11 +16,16 @@ let fy = 0;
 let fScale = 1;
 let fMouth = 0; // 0 = closed, 1 = wide open
 
-let bubbleAlpha = 0;
+// floating letters
+const WORD = 'playground';
+let letters = [];
+let letterIndex = 0;
+let lastEmitFrame = 0;
 
 const MOUTH_OPEN_GAP = 0.035; // lip gap / face height where "open" starts
 const MOUTH_WIDE_GAP = 0.12;  // lip gap / face height for fully open
-const BUBBLE_TRIGGER = 0.35;  // mouth amount that shows the bubble
+const EMIT_TRIGGER = 0.3;     // mouth amount that starts emitting letters
+const EMIT_INTERVAL = 11;     // frames between letters
 
 function preload() {
   faceMesh = ml5.faceMesh({ maxFaces: 1, refineLandmarks: false, flipped: true });
@@ -81,15 +87,18 @@ function draw() {
   fScale = lerp(fScale, ts, 0.1);
   fMouth = lerp(fMouth, tm, 0.25);
 
-  const bubbleTarget = fMouth > BUBBLE_TRIGGER ? 255 : 0;
-  bubbleAlpha = lerp(bubbleAlpha, bubbleTarget, 0.12);
-
+  const mouth = mouthPos(fx, fy, fScale);
+  emitLetters(mouth);
+  updateAndDrawLetters(mouth);
   drawFace(fx, fy, fScale, fMouth);
-  if (bubbleAlpha > 2) drawBubble(fx, fy, fScale, bubbleAlpha);
 }
 
-// Minimal face: two arched eyebrows, two dot eyes, a "2"-shaped
-// nose-to-chin stroke, and an 'O' mouth that grows when you open yours.
+function mouthPos(x, y, s) {
+  return { x: x + 5 * s, y: y + 100 * s };
+}
+
+// Minimal face: two arched eyebrows, two dot eyes, a nose stroke that
+// starts between the eyes, and an 'O' mouth below the nose.
 function drawFace(x, y, s, mouthAmt) {
   const w = 13 * s; // main stroke weight
 
@@ -101,68 +110,77 @@ function drawFace(x, y, s, mouthAmt) {
   noFill();
 
   // eyebrows
-  arc(x - 70 * s, y - 80 * s, 110 * s, 70 * s, PI + 0.45, TWO_PI - 0.35);
-  arc(x + 45 * s, y - 75 * s, 130 * s, 90 * s, PI + 0.35, TWO_PI - 0.25);
+  arc(x - 60 * s, y - 95 * s, 110 * s, 70 * s, PI + 0.45, TWO_PI - 0.35);
+  arc(x + 55 * s, y - 90 * s, 120 * s, 85 * s, PI + 0.35, TWO_PI - 0.25);
 
   // eyes
   noStroke();
   fill(0);
-  circle(x - 65 * s, y - 30 * s, 34 * s);
-  circle(x + 15 * s, y - 18 * s, 34 * s);
+  circle(x - 60 * s, y - 45 * s, 34 * s);
+  circle(x + 50 * s, y - 40 * s, 34 * s);
 
-  // nose-to-chin "2" stroke: diagonal down-left, then a flat base
+  // nose: starts between the eyes, sweeps down-left, short flat base
   noFill();
   stroke(0);
   strokeWeight(w);
   beginShape();
-  vertex(x + 55 * s, y - 60 * s);
-  quadraticVertex(x + 30 * s, y + 10 * s, x - 55 * s, y + 95 * s);
+  vertex(x - 5 * s, y - 50 * s);
+  quadraticVertex(x - 12 * s, y + 5 * s, x - 42 * s, y + 50 * s);
   endShape();
-  line(x - 55 * s, y + 95 * s, x + 25 * s, y + 82 * s);
+  line(x - 42 * s, y + 50 * s, x + 18 * s, y + 42 * s);
 
-  // 'O' mouth — grows with mouth opening
-  const mouthD = lerp(20 * s, 95 * s, mouthAmt);
+  // 'O' mouth below the nose — grows with mouth opening
+  const m = mouthPos(x, y, s);
+  const mouthD = lerp(20 * s, 90 * s, mouthAmt);
   strokeWeight(max(w * 0.65, lerp(w * 0.65, w, mouthAmt)));
-  circle(x + 60 * s, y + 55 * s, mouthD);
+  circle(m.x, m.y, mouthD);
   pop();
 }
 
-// Speech bubble with "PLAYGROUND", anchored near the mouth.
-function drawBubble(x, y, s, alpha) {
-  const a = alpha / 255;
-  const popScale = 0.85 + 0.15 * a; // small pop-in scale
-  const bx = x + 150 * s;
-  const by = y - 60 * s - 20 * s * a;
+// ---------------------------------------------------------------- letters
 
-  push();
-  translate(bx, by);
-  scale(popScale * s);
+// While the mouth is open, the letters p-l-a-y-g-r-o-u-n-d stream out
+// one at a time (looping forever).
+function emitLetters(mouth) {
+  if (fMouth < EMIT_TRIGGER) return;
+  if (frameCount - lastEmitFrame < EMIT_INTERVAL) return;
+  lastEmitFrame = frameCount;
 
-  textSize(34);
-  textStyle(BOLD);
-  const tw = textWidth('PLAYGROUND');
-  const padX = 28;
-  const padY = 20;
-  const bw = tw + padX * 2;
-  const bh = 34 + padY * 2;
+  letters.push({
+    char: WORD[letterIndex % WORD.length],
+    x: mouth.x,
+    y: mouth.y,
+    vx: random(-0.6, 0.6),
+    vy: random(-2.6, -1.8),
+    wobble: random(TWO_PI),
+  });
+  letterIndex++;
+}
 
-  stroke(0, alpha);
-  strokeWeight(5);
-  fill(255, alpha);
+function updateAndDrawLetters(mouth) {
+  const maxTravel = height * 0.5; // letters dissolve after rising this far
 
-  // tail pointing back at the mouth
-  beginShape();
-  vertex(-bw / 2 + 30, bh / 2 - 2);
-  vertex(-bw / 2 - 25, bh / 2 + 45);
-  vertex(-bw / 2 + 75, bh / 2 - 2);
-  endShape(CLOSE);
-
-  rectMode(CENTER);
-  rect(0, 0, bw, bh, 18);
-
-  noStroke();
-  fill(0, alpha);
   textAlign(CENTER, CENTER);
-  text('PLAYGROUND', 0, 2);
-  pop();
+  textStyle(BOLD);
+  noStroke();
+
+  for (let i = letters.length - 1; i >= 0; i--) {
+    const L = letters[i];
+    L.y += L.vy;
+    L.x += L.vx + sin(frameCount * 0.06 + L.wobble) * 0.6;
+
+    const travel = constrain(dist(L.x, L.y, mouth.x, mouth.y) / maxTravel, 0, 1);
+    if (travel >= 1) {
+      letters.splice(i, 1);
+      continue;
+    }
+
+    // small near the mouth, bigger as it floats away; fade out at the end
+    const size = lerp(13, 72, travel) * fScale;
+    const alpha = travel > 0.75 ? map(travel, 0.75, 1, 255, 0) : 255;
+
+    fill(0, alpha);
+    textSize(size);
+    text(L.char, L.x, L.y);
+  }
 }

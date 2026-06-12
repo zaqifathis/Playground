@@ -4,8 +4,10 @@
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
+html,
+body {
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
@@ -26,88 +28,33 @@ body {
   display: block;
 }
 
-.brand {
-  position: absolute;
-  top: 28px;
-  left: 36px;
-  font-weight: 800;
-  font-size: 15px;
-  letter-spacing: 0.18em;
-}
-
-.hero-hint {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 13px;
-  color: #999;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
 /* ------------------------------------------------------------ projects */
 
-#projects {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 110px 36px 60px;
+.project-list {
+  position: absolute;
+  top: 36px;
+  left: 36px;
+  z-index: 10;
 }
 
-#projects h2 {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+.project-list h2 {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #999;
-  margin-bottom: 28px;
+  margin-bottom: 12px;
 }
 
 .project-list a {
-  display: flex;
-  align-items: baseline;
-  gap: 28px;
-  padding: 30px 8px;
-  border-top: 2px solid #000;
-  text-decoration: none;
+  display: block;
+  font-size: 14px;
+  font-weight: 400;
   color: #000;
-  font-weight: 800;
-  font-size: clamp(28px, 5vw, 56px);
-  line-height: 1.1;
-  transition: transform 0.25s ease, background 0.25s ease;
-}
-
-.project-list a:last-child {
-  border-bottom: 2px solid #000;
+  text-decoration: none;
+  padding: 4px 0;
 }
 
 .project-list a:hover {
-  transform: translateX(14px);
-}
-
-.project-list .num {
-  font-size: 0.45em;
-  font-weight: 700;
-  color: #999;
-}
-
-.project-list .arrow {
-  margin-left: auto;
-  font-size: 0.6em;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-
-.project-list a:hover .arrow {
-  opacity: 1;
-}
-
-/* -------------------------------------------------------------- footer */
-
-footer {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 36px 48px;
-  font-size: 13px;
-  color: #999;
+  text-decoration: underline;
 }
