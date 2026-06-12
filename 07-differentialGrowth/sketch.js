@@ -32,7 +32,6 @@ const MAX_NODES = 9000; // global node budget (perf / "no space left")
 const STILL_FRAMES = 110; // frames of no motion before a path freezes
 
 const PINCH_TAP_MS = 350;  // shorter pinch = circle, longer = curve
-const FIST_HOLD_MS = 500;  // hold all-fingers pinch this long to clear
 const CIRCLE_R = 38;
 
 // ------------------------------------------------------------- state
@@ -41,8 +40,6 @@ let paths = [];
 let totalNodes = 0;
 
 let pinch = { active: false, t0: 0, pts: [], lastSeen: 0 };
-let fistT0 = 0;
-let fistLatch = false; // require fist release before another clear
 let clearedAt = -99999;
 
 let flipOn = false;
@@ -100,6 +97,10 @@ function setup() {
     textStr = textInput.value.trim();
     rebuildText();
     wakeAll();
+    if (flipOn) respawnSeeds();
+  });
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    clearAll();
     if (flipOn) respawnSeeds();
   });
 }
@@ -199,8 +200,6 @@ function updateGesture(sep) {
     indexMark = null;
     // hand lost mid-draw: finalize after a short grace period
     if (pinch.active && now - pinch.lastSeen > 220) finalizePinch(sep);
-    fistT0 = 0;
-    fistLatch = false;
     return;
   }
 
@@ -210,27 +209,8 @@ function updateGesture(sep) {
   const handSize = dist(wrist.x, wrist.y, midMcp.x, midMcp.y);
   const thumb = mapPt(kp[4]);
   const index = mapPt(kp[8]);
-  const tips = [4, 8, 12, 16, 20].map((i) => mapPt(kp[i]));
   thumbMark = thumb;
   indexMark = index;
-
-  // ---- fist (all fingertips bunched) -> clear all
-  const cx = tips.reduce((a, t) => a + t.x, 0) / tips.length;
-  const cy = tips.reduce((a, t) => a + t.y, 0) / tips.length;
-  const spread = tips.reduce((a, t) => max(a, dist(t.x, t.y, cx, cy)), 0);
-  const isFist = spread < handSize * 0.42;
-
-  if (isFist) {
-    if (pinch.active) pinch = { active: false, t0: 0, pts: [], lastSeen: 0 };
-    if (!fistT0) fistT0 = now;
-    if (!fistLatch && now - fistT0 > FIST_HOLD_MS) {
-      clearAll();
-      fistLatch = true;
-    }
-    return;
-  }
-  fistT0 = 0;
-  fistLatch = false;
 
   // ---- thumb+index pinch (with hysteresis) — fingers must nearly touch
   const pd = dist(thumb.x, thumb.y, index.x, index.y);
@@ -569,7 +549,7 @@ function insertMid(ns, i) {
 // -------------------------------------------------------------- render
 
 function hideObstacles() {
-  return flipOn && hideChk.checked;
+  return hideChk.checked;
 }
 
 function drawTextObstacle() {
@@ -649,7 +629,7 @@ function drawHud() {
   textSize(12);
   textAlign(LEFT, BOTTOM);
   text(
-    'pinch tap: circle   ·   pinch + hold: draw curve   ·   release: grow   ·   fist (hold): clear',
+    'pinch tap: circle   ·   pinch + hold: draw curve   ·   release: grow',
     16, height - 34
   );
   fill(143, 160, 184, 130);

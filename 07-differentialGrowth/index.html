@@ -40,7 +40,8 @@
       gap: 8px;
       white-space: nowrap;
     }
-    #flipBtn {
+    #flipBtn,
+    #restartBtn {
       font: inherit;
       font-weight: 600;
       letter-spacing: 0.08em;
@@ -51,6 +52,10 @@
       padding: 7px 16px;
       cursor: pointer;
       transition: all 0.15s ease;
+    }
+    #restartBtn:hover {
+      color: #ffb4a8;
+      border-color: rgba(255, 180, 168, 0.6);
     }
     #flipBtn.on {
       color: #04060f;
@@ -119,9 +124,10 @@
       <input id="offSlider" type="range" min="0" max="80" step="1" value="18" />
       <span class="val" id="offVal">18</span>
     </div>
-    <div class="ctrl flipOnly" id="hideCtrl">
+    <div class="ctrl" id="hideCtrl">
       <label id="hideLbl"><input id="hideChk" type="checkbox" /> hide</label>
     </div>
+    <button id="restartBtn">RESTART</button>
   </div>
   <script src="sketch.js"></script>
 </body>

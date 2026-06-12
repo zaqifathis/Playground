@@ -9,7 +9,6 @@ Hand-drawn lines that grow into space-filling meanders (differential growth), dr
 | Quick thumb+index pinch (tap) | Drop a circle |
 | Pinch + hold and move | Draw a curve along the pinch point |
 | Release pinch | The line starts growing |
-| Pinch all fingers together, hold ~0.5 s | Clear everything |
 
 ## Controls (top center)
 
@@ -18,7 +17,8 @@ Hand-drawn lines that grow into space-filling meanders (differential growth), dr
 - **spacing** slider — distance the growing strands keep from each other.
 - **seeds** slider — number of random seeds (FLIP mode only).
 - **offset** slider — extra clearance the growth keeps around the static obstacle lines (FLIP mode only).
-- **hide** checkbox — hide the obstacles (text + drawn lines) so they appear as negative space in the growth (FLIP mode only).
+- **hide** checkbox — hide the obstacles (text + static drawn lines) so they appear as negative space in the growth.
+- **RESTART** button — delete everything and start over (respawns seeds in FLIP mode).
 
 ## Growth
 
