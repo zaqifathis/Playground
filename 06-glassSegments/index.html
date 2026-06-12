@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>06 — Glass Segments</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    canvas { display: block; }
+
+    /* ---------------------------------------------------- toolbar */
+    #toolbar {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 22px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(24px) saturate(1.6);
+      -webkit-backdrop-filter: blur(24px) saturate(1.6);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      color: #fff;
+      font-size: 12px;
+      user-select: none;
+      z-index: 10;
+      white-space: nowrap;
+      max-width: calc(100vw - 32px);
+      overflow-x: auto;
+      box-sizing: border-box;
+    }
+    #toolbar .effects {
+      display: flex;
+      gap: 6px;
+    }
+    #toolbar .effects button {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: transparent;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    #toolbar .effects button:hover { background: rgba(255, 255, 255, 0.18); }
+    #toolbar .effects button.active {
+      background: #fff;
+      color: #111;
+      border-color: #fff;
+    }
+    #toolbar .sep {
+      width: 1px;
+      align-self: stretch;
+      background: rgba(255, 255, 255, 0.25);
+    }
+    #toolbar label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      color: rgba(255, 255, 255, 0.75);
+    }
+    #toolbar input[type="range"] {
+      width: 80px;
+      accent-color: #fff;
+    }
+    #toolbar select {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    #toolbar select option { color: #111; }
+
+    /* ----------------------------------------------- capture button */
+    #capture {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 4px solid rgba(255, 255, 255, 0.9);
+      background: transparent;
+      cursor: pointer;
+      z-index: 10;
+      padding: 0;
+    }
+    #capture::after {
+      content: "";
+      position: absolute;
+      inset: 5px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.1s;
+    }
+    #capture:active::after { transform: scale(0.85); }
+
+    /* camera-flash overlay on capture */
+    #flash {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 20;
+      transition: opacity 0.35s ease-out;
+    }
+    #flash.on { opacity: 0.8; transition: none; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+</head>
+<body>
+  <div id="toolbar">
+    <div class="effects">
+      <button data-effect="0" class="active" title="1">Fluted &#9615;&#9615;</button>
+      <button data-effect="1" title="2">Fluted &#9601;</button>
+      <button data-effect="2" title="3">Tiles</button>
+      <button data-effect="3" title="4">Dots</button>
+    </div>
+    <div class="sep"></div>
+    <label>Density <input type="range" id="density" min="3" max="48" step="1" value="14" /></label>
+    <label>Distortion <input type="range" id="strength" min="0" max="100" value="85" /></label>
+    <label>Frost <input type="range" id="frost" min="0" max="100" value="8" /></label>
+    <div class="sep"></div>
+    <select id="colorMode" title="Color">
+      <option value="0">Color</option>
+      <option value="1">Mono</option>
+      <option value="2">Sepia</option>
+      <option value="3">Duotone</option>
+    </select>
+    <select id="format" title="Capture format">
+      <option value="png">PNG</option>
+      <option value="jpg">JPG</option>
+    </select>
+  </div>
+
+  <button id="capture" title="Capture (S)"></button>
+  <div id="flash"></div>
+
+  <script src="sketch.js"></script>
+</body>
+</html>
