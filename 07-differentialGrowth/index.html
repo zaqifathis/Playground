@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>07 — Differential Growth</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #04060f;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+    #ui {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 10px 18px;
+      border-radius: 14px;
+      background: rgba(10, 14, 24, 0.74);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 12px;
+      color: #cfd6e4;
+      user-select: none;
+      z-index: 10;
+    }
+    #ui .ctrl {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    #flipBtn {
+      font: inherit;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #cfd6e4;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 9px;
+      padding: 7px 16px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    #flipBtn.on {
+      color: #04060f;
+      background: #e8f6ff;
+      border-color: #e8f6ff;
+      box-shadow: 0 0 14px rgba(180, 230, 255, 0.5);
+    }
+    input[type="range"] {
+      width: 110px;
+      accent-color: #7fd0ff;
+    }
+    #textInput {
+      font: inherit;
+      width: 120px;
+      color: #e8f0fa;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 8px;
+      padding: 6px 10px;
+      outline: none;
+    }
+    #textInput:focus {
+      border-color: #7fd0ff;
+    }
+    #hideLbl {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    #hideChk {
+      accent-color: #7fd0ff;
+    }
+    #ui .flipOnly {
+      display: none;
+    }
+    #ui .flipOnly.visible {
+      display: flex;
+    }
+    .val {
+      min-width: 20px;
+      text-align: right;
+      color: #8fa0b8;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+  <script src="https://unpkg.com/ml5@1.2.1/dist/ml5.min.js"></script>
+</head>
+<body>
+  <div id="ui">
+    <button id="flipBtn">FLIP</button>
+    <input id="textInput" type="text" placeholder="add text…" maxlength="24" autocomplete="off" />
+    <div class="ctrl">
+      <label for="sepSlider">spacing</label>
+      <input id="sepSlider" type="range" min="14" max="70" step="1" value="36" />
+      <span class="val" id="sepVal">36</span>
+    </div>
+    <div class="ctrl flipOnly" id="seedsCtrl">
+      <label for="seedSlider">seeds</label>
+      <input id="seedSlider" type="range" min="1" max="40" step="1" value="12" />
+      <span class="val" id="seedVal">12</span>
+    </div>
+    <div class="ctrl flipOnly" id="offCtrl">
+      <label for="offSlider">offset</label>
+      <input id="offSlider" type="range" min="0" max="80" step="1" value="18" />
+      <span class="val" id="offVal">18</span>
+    </div>
+    <div class="ctrl flipOnly" id="hideCtrl">
+      <label id="hideLbl"><input id="hideChk" type="checkbox" /> hide</label>
+    </div>
+  </div>
+  <script src="sketch.js"></script>
+</body>
+</html>

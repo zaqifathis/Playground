@@ -14,6 +14,7 @@ The root is a landing page with a face-tracking hero (ml5 faceMesh / MediaPipe):
 | 04 | [04-pixman](./04-pixman) | Body pose rendered as mosaic pixel people on a white tile wall — random outfit colors, click to reroll |
 | 05 | [05-pixface](./05-pixface) | Random pixelated face blobs (up to 4 people) that follow heads, pupils track eyeballs — click to reroll |
 | 06 | [06-glassSegments](./06-glassSegments) | Webcam through segmented glass (fluted / tiles / dot lenses), shader-based, with capture button |
+| 07 | [07-differentialGrowth](./07-differentialGrowth) | Pinch to draw circles/curves that grow into space-filling meanders (differential growth) — FLIP mode grows random seeds around your lines |
 
 ## Running locally
 
