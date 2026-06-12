@@ -9,6 +9,7 @@ The root is a landing page with a face-tracking hero (ml5 faceMesh / MediaPipe):
 | # | Folder | Description |
 |---|--------|-------------|
 | 01 | [01-magnetic-field](./01-magnetic-field) | Interactive magnetic / vector field controlled by hand tracking |
+| 02 | [02-emoface](./02-emoface) | Random blob character (shape + eyes + mouth) that mirrors your head; pinch to reroll |
 
 ## Running locally
 
