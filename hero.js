@@ -70,7 +70,8 @@ function draw() {
     const sy = height / video.height;
     tx = (face.box.xMin + face.box.width / 2) * sx;
     ty = (face.box.yMin + face.box.height / 2) * sy;
-    ts = max((face.box.height * sy) / 340, baseScale() * 0.5);
+    // face close to webcam -> big icon, far away -> small icon
+    ts = constrain((face.box.height * sy) / 300, baseScale() * 0.35, baseScale() * 3);
 
     // mouth opening: gap between upper (13) and lower (14) lip landmarks,
     // normalized by face height so distance to camera doesn't matter
@@ -140,14 +141,19 @@ function drawFace(x, y, s, mouthAmt) {
 // ---------------------------------------------------------------- letters
 
 // While the mouth is open, the letters p-l-a-y-g-r-o-u-n-d stream out
-// one at a time (looping forever).
+// one at a time — one word per opening. Close and reopen the mouth to
+// say it again.
 function emitLetters(mouth) {
-  if (fMouth < EMIT_TRIGGER) return;
+  if (fMouth < EMIT_TRIGGER) {
+    letterIndex = 0; // mouth closed: rearm for the next opening
+    return;
+  }
+  if (letterIndex >= WORD.length) return; // word finished for this opening
   if (frameCount - lastEmitFrame < EMIT_INTERVAL) return;
   lastEmitFrame = frameCount;
 
   letters.push({
-    char: WORD[letterIndex % WORD.length],
+    char: WORD[letterIndex],
     x: mouth.x,
     y: mouth.y,
     vx: random(-0.6, 0.6),

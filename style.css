@@ -32,7 +32,7 @@ body {
 
 .project-list {
   position: absolute;
-  top: 36px;
+  top: 33.33vh;
   left: 36px;
   z-index: 10;
 }
