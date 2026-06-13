@@ -14,7 +14,13 @@ features track your real expression.
 
 ## Character (rerolled on pinch)
 
-- **Border** (4): plain, dots, scallop, zigzag
+A reroll lands on one of six archetypes sampled from the reference sheet, each
+a coherent combo of:
+
+- **Border**: plain, dot bead ring, scalloped face, zigzag face
+- **Brows**: cloud, tuft, thick bar
+- **Eyes**: round, or sleepy (lidded)
+- **Mustache**: blue handlebar on some faces
 - **Colors**: background, border accent, inner skin (scallop/zigzag), cheeks
 
 ## Interaction

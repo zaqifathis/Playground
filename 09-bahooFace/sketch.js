@@ -47,14 +47,34 @@ const L_BROW = 105, R_BROW = 334;
 const MOUTH_L = 61, MOUTH_R = 291, LIP_TOP = 13, LIP_BOT = 14;
 const CHEEK_L = 234, CHEEK_R = 454, FACE_TOP = 10, CHIN = 152;
 
-// palette sampled from the reference sheet
-const BG = ['#1d8a4e', '#e8442e', '#e08a7d', '#e8612a', '#2aa3c2', '#1d8a4e'];
-const ACCENT = ['#c0392b', '#5fb6c8', '#e08a7d', '#1d8a4e', '#e8442e'];
-const SKIN = ['#f3e8cf', '#7fc3d6', '#e08a7d', '#e8612a'];
 const FEATURE = '#27409e';   // blue ink for brows, eyes, nose, mouth
-const CHEEK = ['#e8442e', '#e8612a'];
 
 const BORDER_NONE = 0, BORDER_DOTS = 1, BORDER_SCALLOP = 2, BORDER_ZIGZAG = 3;
+const BROW_CLOUD = 0, BROW_BAR = 1, BROW_TUFT = 2;
+const EYE_ROUND = 0, EYE_SLEEPY = 1;
+
+// One recipe per face on the reference sheet, so a reroll lands on a look
+// that belongs to the family. Colors sampled from the image.
+const RECIPES = [
+  // 1 — green, plain, big cloud brows + cheeks
+  { bg: '#1d8a4e', border: BORDER_NONE, cheek: '#d6402e',
+    brow: BROW_CLOUD, eye: EYE_ROUND, mustache: false },
+  // 2 — red, plain, sleepy eyes + handlebar mustache
+  { bg: '#d6402e', border: BORDER_NONE, cheek: '#e8612a',
+    brow: BROW_CLOUD, eye: EYE_SLEEPY, mustache: true },
+  // 3 — pink with red bead border
+  { bg: '#e0998f', border: BORDER_DOTS, accent: '#c0392b', cheek: '#c0392b',
+    brow: BROW_TUFT, eye: EYE_ROUND, mustache: false },
+  // 4 — orange with sky bead border
+  { bg: '#e8612a', border: BORDER_DOTS, accent: '#6cbfd6', cheek: '#d6402e',
+    brow: BROW_CLOUD, eye: EYE_ROUND, mustache: false },
+  // 5 — cream scalloped face on green
+  { bg: '#1d8a4e', border: BORDER_SCALLOP, accent: '#1d8a4e', skin: '#efe7cf',
+    cheek: '#d6402e', brow: BROW_BAR, eye: EYE_SLEEPY, mustache: false },
+  // 6 — blue zigzag face on red
+  { bg: '#d6402e', border: BORDER_ZIGZAG, accent: '#7fb8cb', skin: '#7fb8cb',
+    cheek: '#d6402e', brow: BROW_CLOUD, eye: EYE_ROUND, mustache: false },
+];
 
 let char = null;
 
@@ -86,17 +106,14 @@ function baseScale() {
 }
 
 function reroll() {
-  const pick = (a) => a[floor(random(a.length))];
-  const border = floor(random(4));
+  const r = RECIPES[floor(random(RECIPES.length))];
+  const border = r.border;
   char = {
-    bg: pick(BG),
-    accent: pick(ACCENT),
-    cheek: pick(CHEEK),
-    border,
+    ...r,
+    accent: r.accent || null,
+    skin: r.skin || null,
     // dotted / zigzag frames eat into the square, so shrink the face inside
-    inner: border === BORDER_DOTS ? 0.62 : border === BORDER_ZIGZAG ? 0.74 : 0.9,
-    // scallop & zigzag get an inner skin patch; plain/dots sit on the bg
-    skin: border === BORDER_SCALLOP || border === BORDER_ZIGZAG ? pick(SKIN) : null,
+    inner: border === BORDER_DOTS ? 0.6 : border === BORDER_ZIGZAG ? 0.74 : 0.9,
   };
 }
 
@@ -213,6 +230,7 @@ function drawBahoo(x, y, S) {
   drawBrows(I, ex, ey);
   drawEyes(I, ex, ey);
   drawNose(I, ey);
+  if (char.mustache) drawMustache(I);
   drawMouth(I);
   pop();
 }
@@ -309,10 +327,26 @@ function drawCheeks(I, ex, ey) {
 function drawBrows(I, ex, ey) {
   noStroke();
   fill(FEATURE);
-  // brows rise with the real brows; cloud = three overlapping discs
+  // brows rise with the real brows
   const by = ey - I * 0.14 - browRaise * I * 0.06;
-  cloud(-ex, by, I * 0.13);
-  cloud(ex, by, I * 0.13);
+  if (char.brow === BROW_BAR) {
+    bar(-ex, by, I * 0.2, I * 0.045, 0.12);
+    bar(ex, by, I * 0.2, I * 0.045, -0.12);
+  } else {
+    const w = char.brow === BROW_TUFT ? I * 0.085 : I * 0.13;
+    cloud(-ex, by, w);
+    cloud(ex, by, w);
+  }
+}
+
+// a thick straight brow bar, tilted by `tilt` radians
+function bar(cx, cy, w, h, tilt) {
+  push();
+  translate(cx, cy);
+  rotate(tilt);
+  rectMode(CENTER);
+  rect(0, 0, w, h, h / 2);
+  pop();
 }
 
 // a small bumpy cloud (three circles) centered at (cx,cy)
@@ -327,16 +361,22 @@ function cloud(cx, cy, w) {
 function drawEyes(I, ex, ey) {
   noStroke();
   const r = I * 0.14;
-  // white
-  fill(255);
-  circle(-ex, ey, r);
-  circle(ex, ey, r);
-  // blue pupil slides with gaze
-  fill(FEATURE);
   const px = gazeX * r * 0.22;
   const py = gazeY * r * 0.22;
-  circle(-ex + px, ey + py, r * 0.5);
-  circle(ex + px, ey + py, r * 0.5);
+  for (const s of [-1, 1]) {
+    const cx = s * ex;
+    fill(255);
+    circle(cx, ey, r);
+    if (char.eye === EYE_SLEEPY) {
+      // blue lid covers the upper half, pupil sits low
+      fill(FEATURE);
+      arc(cx, ey, r, r, PI, TWO_PI, CHORD);
+      circle(cx + px, ey + r * 0.18 + py, r * 0.42);
+    } else {
+      fill(FEATURE);
+      circle(cx + px, ey + py, r * 0.5);
+    }
+  }
 }
 
 function drawNose(I, ey) {
@@ -349,10 +389,29 @@ function drawNose(I, ey) {
   rect(0, top + len, I * 0.07, I * 0.05, I * 0.02);  // little foot
 }
 
+// blue handlebar mustache under the nose
+function drawMustache(I) {
+  noStroke();
+  fill(FEATURE);
+  const my = I * 0.27;
+  const w = I * 0.12;
+  push();
+  translate(0, my);
+  ellipse(0, -w * 0.1, w * 1.4, w * 1.2); // center bulge
+  for (const s of [-1, 1]) {
+    push();
+    translate(s * w * 1.05, w * 0.05);
+    rotate(s * 0.6);
+    ellipse(0, 0, w * 1.7, w * 1.05);     // wing curving down-out
+    pop();
+  }
+  pop();
+}
+
 function drawMouth(I) {
   noStroke();
   fill(FEATURE);
-  const my = I * 0.3;
+  const my = char.mustache ? I * 0.46 : I * 0.3;
 
   if (mouthOpen > 0.4) {
     // open mouth: blue rounded rect, taller the more it's open
