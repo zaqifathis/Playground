@@ -16,6 +16,7 @@ The root is a landing page with a face-tracking hero (ml5 faceMesh / MediaPipe):
 | 06 | [06-glassSegments](./06-glassSegments) | Webcam through segmented glass (fluted / tiles / dot lenses), shader-based, with capture button |
 | 07 | [07-differentialGrowth](./07-differentialGrowth) | Pinch to draw circles/curves that grow into space-filling meanders (differential growth) — FLIP mode grows random seeds around your lines |
 | 08 | [08-reactionDiffusion](./08-reactionDiffusion) | Gray-Scott reaction-diffusion ink patterns around typed text (GPU shader, no webcam) — style slider morphs labyrinth to dots |
+| 09 | [09-bahooFace](./09-bahooFace) | Bauhaus-style square face that mirrors your head — pupils, brows & mouth track your expression; pinch to reroll border + colors |
 
 ## Running locally
 
